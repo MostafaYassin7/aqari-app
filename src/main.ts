@@ -12,7 +12,10 @@ async function bootstrap() {
   app.useWebSocketAdapter(new IoAdapter(app));
 
   // Security
-  app.use(helmet());
+  app.use( helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  }),);
   app.enableCors({ origin: '*' });
 
   // Global prefix
