@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Aqar Chat Test</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    header {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 14px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #7dd3fc;
+      letter-spacing: 0.5px;
+    }
+
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      flex: 1;
+      background: #334155;
+      min-height: calc(100vh - 49px);
+    }
+
+    .panel {
+      background: #0f172a;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 49px);
+    }
+
+    .panel-header {
+      background: #1e293b;
+      padding: 12px 16px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-header h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      flex: 1;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #475569;
+      transition: background 0.3s;
+    }
+    .status-dot.connected { background: #4ade80; }
+
+    /* ── AUTH SECTION ─────────────────────────── */
+    .auth-section {
+      padding: 16px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .auth-row { display: flex; gap: 6px; }
+
+    input[type="text"], input[type="number"] {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 7px 10px;
+      color: #e2e8f0;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #7dd3fc; }
+
+    button {
+      padding: 7px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-primary   { background: #0284c7; color: #fff; }
+    .btn-success   { background: #16a34a; color: #fff; }
+    .btn-warning   { background: #d97706; color: #fff; }
+    .btn-danger    { background: #dc2626; color: #fff; }
+    .btn-secondary { background: #334155; color: #e2e8f0; }
+
+    .user-info {
+      font-size: 12px;
+      color: #4ade80;
+      padding: 2px 0;
+      display: none;
+    }
+
+    /* ── CHAT SECTION ─────────────────────────── */
+    .chat-section {
+      padding: 12px 16px;
+      background: #1a2744;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .chat-section label {
+      font-size: 11px;
+      color: #64748b;
+      margin-right: 2px;
+    }
+
+    /* ── MESSAGES ─────────────────────────────── */
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .message-bubble {
+      max-width: 75%;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .message-bubble.sent {
+      background: #0284c7;
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 3px;
+    }
+
+    .message-bubble.received {
+      background: #1e293b;
+      color: #e2e8f0;
+      align-self: flex-start;
+      border-bottom-left-radius: 3px;
+    }
+
+    .message-meta {
+      font-size: 10px;
+      opacity: 0.6;
+      margin-top: 3px;
+    }
+
+    .system-msg {
+      font-size: 11px;
+      color: #64748b;
+      text-align: center;
+      padding: 4px;
+      font-style: italic;
+    }
+
+    .typing-indicator {
+      font-size: 12px;
+      color: #7dd3fc;
+      padding: 4px 0;
+      height: 20px;
+      font-style: italic;
+    }
+
+    /* ── INPUT AREA ───────────────────────────── */
+    .input-area {
+      padding: 12px 16px;
+      border-top: 1px solid #334155;
+      display: flex;
+      gap: 8px;
+      background: #1e293b;
+    }
+
+    .input-area input {
+      flex: 1;
+    }
+
+    /* ── LOG ──────────────────────────────────── */
+    .log-area {
+      padding: 8px 16px;
+      height: 80px;
+      overflow-y: auto;
+      background: #020617;
+      border-top: 1px solid #1e293b;
+      font-size: 11px;
+      font-family: monospace;
+      color: #475569;
+    }
+
+    .log-area .log-entry { padding: 1px 0; }
+    .log-area .log-entry.info  { color: #7dd3fc; }
+    .log-area .log-entry.ok    { color: #4ade80; }
+    .log-area .log-entry.error { color: #f87171; }
+    .log-area .log-entry.event { color: #fbbf24; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<header>⚡ Aqar Chat — Socket.io Test Console &nbsp;|&nbsp; <span style="color:#94a3b8;font-weight:400;font-size:13px">http://localhost:3000</span></header>
+
+<div class="panels">
+
+  <!-- ═══════════════ USER A ═══════════════ -->
+  <div class="panel" id="panelA">
+    <div class="panel-header">
+      <h2>User A</h2>
+      <div class="status-dot" id="dotA"></div>
+    </div>
+
+    <div class="auth-section">
+      <div class="auth-row">
+        <input type="text" id="phoneA" placeholder="Phone (+966…)" value="+966500000001" />
+        <button class="btn-primary" onclick="sendOtp('A')">Send OTP</button>
+      </div>
+      <div class="auth-row">
+        <input type="text" id="otpA" placeholder="OTP code" />
+        <button class="btn-success" onclick="verifyOtp('A')">Verify & Connect</button>
+      </div>
+      <div class="user-info" id="userInfoA">—</div>
+    </div>
+
+    <div class="chat-section">
+      <label>Chat ID:</label>
+      <input type="text" id="chatIdA" placeholder="UUID" style="flex:1;min-width:160px" />
+      <button class="btn-warning" onclick="joinChat('A')">Join</button>
+      <button class="btn-secondary" onclick="leaveChat('A')">Leave</button>
+    </div>
+
+    <div class="messages-area" id="messagesA"></div>
+    <div class="typing-indicator" id="typingA"></div>
+
+    <div class="input-area">
+      <input type="text" id="msgA" placeholder="Type a message…"
+        onkeyup="handleKey(event,'A')" oninput="emitTyping('A')" />
+      <button class="btn-primary" onclick="sendMsg('A')">Send</button>
+    </div>
+
+    <div class="log-area" id="logA"></div>
+  </div>
+
+  <!-- ═══════════════ USER B ═══════════════ -->
+  <div class="panel" id="panelB">
+    <div class="panel-header">
+      <h2>User B</h2>
+      <div class="status-dot" id="dotB"></div>
+    </div>
+
+    <div class="auth-section">
+      <div class="auth-row">
+        <input type="text" id="phoneB" placeholder="Phone (+966…)" value="+966500000002" />
+        <button class="btn-primary" onclick="sendOtp('B')">Send OTP</button>
+      </div>
+      <div class="auth-row">
+        <input type="text" id="otpB" placeholder="OTP code" />
+        <button class="btn-success" onclick="verifyOtp('B')">Verify & Connect</button>
+      </div>
+      <div class="user-info" id="userInfoB">—</div>
+    </div>
+
+    <div class="chat-section">
+      <label>Chat ID:</label>
+      <input type="text" id="chatIdB" placeholder="UUID" style="flex:1;min-width:160px" />
+      <button class="btn-warning" onclick="joinChat('B')">Join</button>
+      <button class="btn-secondary" onclick="leaveChat('B')">Leave</button>
+    </div>
+
+    <div class="messages-area" id="messagesB"></div>
+    <div class="typing-indicator" id="typingB"></div>
+
+    <div class="input-area">
+      <input type="text" id="msgB" placeholder="Type a message…"
+        onkeyup="handleKey(event,'B')" oninput="emitTyping('B')" />
+      <button class="btn-primary" onclick="sendMsg('B')">Send</button>
+    </div>
+
+    <div class="log-area" id="logB"></div>
+  </div>
+
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api/v1';
+  const WS  = 'http://localhost:3000';
+
+  const state = {
+    A: { socket: null, token: null, userId: null, chatId: null, typingTimer: null },
+    B: { socket: null, token: null, userId: null, chatId: null, typingTimer: null },
+  };
+
+  // ── LOGGING ─────────────────────────────────────────────────────────────────
+
+  function log(side, msg, level = 'info') {
+    const el = document.getElementById('log' + side);
+    const entry = document.createElement('div');
+    entry.className = `log-entry ${level}`;
+    entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    el.appendChild(entry);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  // ── AUTH ─────────────────────────────────────────────────────────────────────
+
+  async function sendOtp(side) {
+    const phone = document.getElementById('phone' + side).value.trim();
+    if (!phone) return;
+    try {
+      const res = await fetch(`${API}/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        log(side, `OTP sent to ${phone}`, 'ok');
+      } else {
+        log(side, `OTP error: ${data.message}`, 'error');
+      }
+    } catch (e) {
+      log(side, `Request failed: ${e.message}`, 'error');
+    }
+  }
+
+  async function verifyOtp(side) {
+    const phone = document.getElementById('phone' + side).value.trim();
+    const code  = document.getElementById('otp'   + side).value.trim();
+    if (!phone || !code) return;
+
+    try {
+      const res = await fetch(`${API}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code }),
+      });
+      const data = await res.json();
+
+      if (data.success && data.data?.token) {
+        state[side].token  = data.data.token;
+        state[side].userId = data.data.user?.id;
+        log(side, `Authenticated as ${data.data.user?.name ?? phone}`, 'ok');
+        document.getElementById('userInfoA' === 'userInfo' + side
+          ? 'userInfoA' : 'userInfo' + side).style.display = 'block';
+        document.getElementById('userInfo' + side).textContent =
+          `✓ ${data.data.user?.name ?? phone}  (${state[side].userId?.substring(0,8)}…)`;
+        connectSocket(side);
+      } else {
+        log(side, `Auth failed: ${data.message}`, 'error');
+      }
+    } catch (e) {
+      log(side, `Request failed: ${e.message}`, 'error');
+    }
+  }
+
+  // ── SOCKET ───────────────────────────────────────────────────────────────────
+
+  function connectSocket(side) {
+    if (state[side].socket?.connected) {
+      state[side].socket.disconnect();
+    }
+
+    const socket = io(`${WS}/chat`, {
+      auth: { token: state[side].token },
+      transports: ['websocket'],
+    });
+
+    socket.on('connect', () => {
+      document.getElementById('dot' + side).classList.add('connected');
+      log(side, `Socket connected: ${socket.id}`, 'ok');
+    });
+
+    socket.on('disconnect', () => {
+      document.getElementById('dot' + side).classList.remove('connected');
+      log(side, 'Socket disconnected', 'error');
+    });
+
+    socket.on('connect_error', (err) => {
+      log(side, `Connection error: ${err.message}`, 'error');
+    });
+
+    socket.on('new_message', ({ message, chatId }) => {
+      log(side, `← new_message in ${chatId.substring(0,8)}…`, 'event');
+      appendMessage(side, message, state[side].userId);
+    });
+
+    socket.on('messages_read', ({ chatId, userId }) => {
+      log(side, `← messages_read by ${userId.substring(0,8)}…`, 'event');
+    });
+
+    socket.on('user_typing', ({ userId, chatId }) => {
+      const el = document.getElementById('typing' + side);
+      el.textContent = `${userId.substring(0,8)}… is typing…`;
+      clearTimeout(state[side]._typingClear);
+      state[side]._typingClear = setTimeout(() => { el.textContent = ''; }, 2000);
+    });
+
+    state[side].socket = socket;
+  }
+
+  // ── CHAT ROOM ────────────────────────────────────────────────────────────────
+
+  function joinChat(side) {
+    const chatId = document.getElementById('chatId' + side).value.trim();
+    if (!chatId) return log(side, 'Enter a chat ID first', 'error');
+    const { socket } = state[side];
+    if (!socket?.connected) return log(side, 'Not connected', 'error');
+
+    state[side].chatId = chatId;
+    socket.emit('join_chat', chatId);
+    log(side, `Joined chat ${chatId.substring(0,8)}…`, 'ok');
+    addSystemMsg(side, `Joined chat room`);
+  }
+
+  function leaveChat(side) {
+    const { socket, chatId } = state[side];
+    if (!socket?.connected || !chatId) return;
+    socket.emit('leave_chat', chatId);
+    state[side].chatId = null;
+    log(side, `Left chat ${chatId.substring(0,8)}…`, 'info');
+    addSystemMsg(side, `Left chat room`);
+  }
+
+  // ── MESSAGES ─────────────────────────────────────────────────────────────────
+
+  function sendMsg(side) {
+    const input = document.getElementById('msg' + side);
+    const content = input.value.trim();
+    if (!content) return;
+
+    const { socket, chatId } = state[side];
+    if (!socket?.connected) return log(side, 'Not connected', 'error');
+    if (!chatId) return log(side, 'Join a chat room first', 'error');
+
+    socket.emit('send_message', { chatId, content });
+    input.value = '';
+    log(side, `→ send_message: "${content}"`, 'info');
+  }
+
+  function handleKey(e, side) {
+    if (e.key === 'Enter') sendMsg(side);
+  }
+
+  function emitTyping(side) {
+    const { socket, chatId, typingTimer } = state[side];
+    if (!socket?.connected || !chatId) return;
+    clearTimeout(typingTimer);
+    socket.emit('typing', chatId);
+    state[side].typingTimer = setTimeout(() => {}, 2000);
+  }
+
+  function appendMessage(side, message, myUserId) {
+    const area = document.getElementById('messages' + side);
+    const isSent = message.senderId === myUserId;
+
+    const bubble = document.createElement('div');
+    bubble.className = `message-bubble ${isSent ? 'sent' : 'received'}`;
+
+    const time = new Date(message.createdAt).toLocaleTimeString([], {
+      hour: '2-digit', minute: '2-digit'
+    });
+
+    bubble.innerHTML = `
+      <div>${escHtml(message.content)}</div>
+      <div class="message-meta">${isSent ? 'You' : message.senderId.substring(0,8)+'…'} · ${time}</div>
+    `;
+    area.appendChild(bubble);
+    area.scrollTop = area.scrollHeight;
+  }
+
+  function addSystemMsg(side, text) {
+    const area = document.getElementById('messages' + side);
+    const el = document.createElement('div');
+    el.className = 'system-msg';
+    el.textContent = `— ${text} —`;
+    area.appendChild(el);
+    area.scrollTop = area.scrollHeight;
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── QUICK COPY CHAT ID BETWEEN PANELS ────────────────────────────────────────
+
+  // Sync chat ID: when user types in one panel, suggest in other
+  document.getElementById('chatIdA').addEventListener('change', function() {
+    if (!document.getElementById('chatIdB').value) {
+      document.getElementById('chatIdB').value = this.value;
+    }
+  });
+  document.getElementById('chatIdB').addEventListener('change', function() {
+    if (!document.getElementById('chatIdA').value) {
+      document.getElementById('chatIdA').value = this.value;
+    }
+  });
+</script>
+</body>
+</html>

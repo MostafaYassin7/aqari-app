@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/Aqar/**)",
+      "Bash(npx @nestjs/cli new aqar-backend --package-manager npm --skip-git)",
+      "Bash(npm i:*)",
+      "Bash(ls -la D:/Aqar/aqar-backend/.env*)",
+      "Bash(npx tsc:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker-compose exec:*)",
+      "Bash(docker-compose restart:*)"
+    ]
+  }
+}
