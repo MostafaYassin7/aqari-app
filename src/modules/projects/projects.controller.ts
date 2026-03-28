@@ -38,7 +38,7 @@ export class ProjectsController {
   // ─── CREATE ─────────────────────────────────────────────────────────────────
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(UserRole.OWNER, UserRole.BROKER, UserRole.HOST)
+  @Roles(UserRole.OWNER, UserRole.BROKER, UserRole.HOST, UserRole.ADMIN)
   @Post()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new project' })

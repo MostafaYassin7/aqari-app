@@ -25,7 +25,7 @@ import { CreateReminderDto } from './dto/create-reminder.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { ClientPriority } from './entities/client.entity';
 
-const CRM_ROLES = [UserRole.BROKER, UserRole.OWNER, UserRole.HOST];
+const CRM_ROLES = [UserRole.BROKER, UserRole.OWNER, UserRole.HOST, UserRole.ADMIN];
 
 @ApiTags('CRM')
 @ApiBearerAuth()

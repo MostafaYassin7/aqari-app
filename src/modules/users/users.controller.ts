@@ -55,7 +55,7 @@ export class UsersController {
   }
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(UserRole.BROKER, UserRole.OWNER, UserRole.HOST)
+  @Roles(UserRole.BROKER, UserRole.OWNER, UserRole.HOST, UserRole.ADMIN)
   @Post('establishment')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create my establishment' })
@@ -64,7 +64,7 @@ export class UsersController {
   }
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(UserRole.BROKER, UserRole.OWNER, UserRole.HOST)
+  @Roles(UserRole.BROKER, UserRole.OWNER, UserRole.HOST, UserRole.ADMIN)
   @Patch('establishment')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update my establishment' })

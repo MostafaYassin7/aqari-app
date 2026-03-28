@@ -57,7 +57,7 @@ export class ListingsController {
   // ─── CREATE ─────────────────────────────────────────────────────────────────
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(UserRole.OWNER, UserRole.BROKER, UserRole.HOST)
+  @Roles(UserRole.OWNER, UserRole.BROKER, UserRole.HOST, UserRole.ADMIN)
   @Post('listings')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new listing' })
