@@ -129,16 +129,17 @@ export class ListingsController {
 
   // ─── UPDATE STATUS ──────────────────────────────────────────────────────────
 
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Patch('listings/:id/status')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update listing status' })
+  @ApiOperation({ summary: 'Update listing status (admin only)' })
   updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @GetUser() user: User,
     @Body() dto: UpdateStatusDto,
   ) {
-    return this.listingsService.updateStatus(id, user.id, dto.status);
+    return this.listingsService.updateStatus(id, user.id, dto.status, true);
   }
 
   // ─── DELETE ─────────────────────────────────────────────────────────────────
