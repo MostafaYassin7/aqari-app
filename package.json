@@ -23,6 +23,7 @@
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f backend",
     "docker:restart": "docker-compose restart backend",
+    "seed": "npx ts-node -r tsconfig-paths/register src/database/seed-all.ts",
     "seed:categories": "npx ts-node -r tsconfig-paths/register src/database/seed-categories.ts",
     "seed:listings": "npx ts-node -r tsconfig-paths/register src/database/seed-listings.ts",
     "seed:promotions": "npx ts-node -r tsconfig-paths/register src/database/seed-promotions.ts"
