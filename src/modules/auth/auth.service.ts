@@ -25,8 +25,8 @@ export class AuthService {
     // Delete previous unused OTPs for this phone
     await this.otpRepo.delete({ phone, isUsed: false });
 
-    // Generate 6-digit code
-    const rawCode = Math.floor(100000 + Math.random() * 900000).toString();
+    // TODO: replace with real OTP generation before production
+    const rawCode = '123456';
 
     // Hash and save
     const hashed = await bcrypt.hash(rawCode, 10);
