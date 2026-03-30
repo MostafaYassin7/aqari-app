@@ -36,9 +36,7 @@ export class AuthService {
     );
 
     const isDev = this.config.get<string>('NODE_ENV') === 'development';
-    if (!isDev) {
-      console.log(`SMS to ${phone}: ${rawCode}`);
-    }
+    console.log(`OTP for ${phone}: ${rawCode}`);
 
     return {
       message: 'OTP sent',
