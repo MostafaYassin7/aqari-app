@@ -20,6 +20,7 @@ import { SearchModule } from './modules/search/search.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { UsersModule } from './modules/users/users.module';
+import { ComplaintsModule } from './modules/complaints/complaints.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { UsersModule } from './modules/users/users.module';
     WhatsappModule,
     IntegrationsModule,
     PropertyAdvertisementLicensesModule,
+    ComplaintsModule,
   ],
 })
 export class AppModule {}

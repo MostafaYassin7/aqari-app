@@ -7,7 +7,7 @@ dotenv.config();
 // DB_HOST in .env is 'postgres' (Docker service name inside docker-compose).
 // When running CLI locally outside Docker, override:
 //   DB_HOST=localhost npx typeorm-ts-node-commonjs -d src/data-source.ts migration:run
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST ?? 'localhost',
   port: Number(process.env.DB_PORT) || 5432,
